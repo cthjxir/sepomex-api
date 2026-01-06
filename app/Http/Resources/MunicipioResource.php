@@ -18,6 +18,7 @@ class MunicipioResource extends JsonResource
             'municipio' => $this->municipio,
             'clave_municipio' => $this->clave_municipio,
             'clave_estado' => $this->clave_estado,
+            'estado' => $this->estado,
         ];
     }
 }

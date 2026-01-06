@@ -17,6 +17,7 @@ class APICodigosPostalesController extends Controller
     {
         $estados = CodigoPostal::query()
             ->select('estado', 'clave_estado')
+            ->selectRaw('(SELECT COUNT(DISTINCT municipio) FROM sepomex s2 WHERE s2.clave_estado = sepomex.clave_estado) as total_municipios')
             ->distinct()
             ->orderBy('estado')
             ->get();
@@ -34,11 +35,11 @@ class APICodigosPostalesController extends Controller
         if (is_numeric($estado)) {
             $query->where('clave_estado', (int) $estado);
         } else {
-            $query->where('estado', $estado);
+            $query->where('estado', 'LIKE', "%{$estado}%");
         }
 
         $municipios = $query
-            ->select('municipio', 'clave_municipio', 'clave_estado')
+            ->select('municipio', 'clave_municipio', 'clave_estado', 'estado')
             ->distinct()
             ->orderBy('municipio')
             ->get();
@@ -64,6 +65,33 @@ class APICodigosPostalesController extends Controller
             return response()->json([
                 'message' => 'No se encontraron códigos postales para el código proporcionado.',
                 'codigo_postal' => $codigo_postal,
+            ], 404);
+        }
+
+        return CodigoPostalResource::collection($codigosPostales)->response();
+    }
+
+    /**
+     * Obtiene todos los códigos postales de un municipio específico.
+     */
+    public function codigosPostalesPorMunicipio(string $municipio): JsonResponse
+    {
+        $query = CodigoPostal::query();
+
+        if (is_numeric($municipio)) {
+            $query->where('clave_municipio', (int) $municipio);
+        } else {
+            $query->where('municipio', 'LIKE', "%{$municipio}%");
+        }
+
+        $codigosPostales = $query
+            ->orderBy('codigo_postal')
+            ->get();
+
+        if ($codigosPostales->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron códigos postales para el municipio proporcionado.',
+                'municipio' => $municipio,
             ], 404);
         }
 

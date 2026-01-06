@@ -17,6 +17,7 @@ class EstadoResource extends JsonResource
         return [
             'estado' => $this->estado,
             'clave_estado' => $this->clave_estado,
+            'total_municipios' => (int) $this->total_municipios,
         ];
     }
 }
