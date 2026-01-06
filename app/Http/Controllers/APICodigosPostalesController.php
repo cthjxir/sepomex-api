@@ -70,4 +70,31 @@ class APICodigosPostalesController extends Controller
 
         return CodigoPostalResource::collection($codigosPostales)->response();
     }
+
+    /**
+     * Obtiene todos los códigos postales de un municipio específico.
+     */
+    public function codigosPostalesPorMunicipio(string $municipio): JsonResponse
+    {
+        $query = CodigoPostal::query();
+
+        if (is_numeric($municipio)) {
+            $query->where('clave_municipio', (int) $municipio);
+        } else {
+            $query->where('municipio', 'LIKE', "%{$municipio}%");
+        }
+
+        $codigosPostales = $query
+            ->orderBy('codigo_postal')
+            ->get();
+
+        if ($codigosPostales->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron códigos postales para el municipio proporcionado.',
+                'municipio' => $municipio,
+            ], 404);
+        }
+
+        return CodigoPostalResource::collection($codigosPostales)->response();
+    }
 }
